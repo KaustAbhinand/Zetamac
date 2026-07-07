@@ -45,7 +45,12 @@ public class Zetamac {
 
     // ---------------- START SCREEN ----------------
     void buildStartUI() {
-        // Clear out anything left over from a previous round (game panel, etc.)
+
+        if (frame == null) {
+            frame = new JFrame("Zetamac");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
+
         frame.getContentPane().removeAll();
         frame.setSize(500, 400);
 
@@ -60,7 +65,10 @@ public class Zetamac {
         d120 = new JRadioButton("120");
 
         ButtonGroup bg = new ButtonGroup();
-        bg.add(d30); bg.add(d60); bg.add(d90); bg.add(d120);
+        bg.add(d30);
+        bg.add(d60);
+        bg.add(d90);
+        bg.add(d120);
         d30.setSelected(true);
 
         durationPanel.add(new JLabel("Duration: "));
@@ -110,27 +118,35 @@ public class Zetamac {
         startPanel.add(startBtn);
 
         frame.add(startPanel, BorderLayout.CENTER);
-        frame.revalidate();
-        frame.repaint();
+        frame.setVisible(true);
     }
 
     // ---------------- READ INPUTS ----------------
     void startGameFromUI() {
 
+        score = 0;
         // Duration
-        if (d30.isSelected()) duration = 30;
-        else if (d60.isSelected()) duration = 60;
-        else if (d90.isSelected()) duration = 90;
-        else duration = 120;
+        if (d30.isSelected())
+            duration = 30;
+        else if (d60.isSelected())
+            duration = 60;
+        else if (d90.isSelected())
+            duration = 90;
+        else
+            duration = 120;
 
         timeLeft = duration;
 
         // Operations
         ArrayList<Character> opsList = new ArrayList<>();
-        if (add.isSelected()) opsList.add('+');
-        if (sub.isSelected()) opsList.add('-');
-        if (mul.isSelected()) opsList.add('x');
-        if (div.isSelected()) opsList.add('/');
+        if (add.isSelected())
+            opsList.add('+');
+        if (sub.isSelected())
+            opsList.add('-');
+        if (mul.isSelected())
+            opsList.add('x');
+        if (div.isSelected())
+            opsList.add('/');
 
         if (opsList.isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Select at least one operation!");
@@ -200,7 +216,8 @@ public class Zetamac {
                         generateQuestion();
                         answerField.setText("");
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         });
     }
@@ -220,19 +237,27 @@ public class Zetamac {
                 // Modal dialog blocks here until the user clicks "OK",
                 // then we loop back to the start screen instead of exiting.
                 JOptionPane.showMessageDialog(frame, "Time up! Score: " + score);
-                System.out.println("[Zetamac] Dialog dismissed, rebuilding start screen...");
-                try {
-                    buildStartUI();
-                    System.out.println("[Zetamac] Start screen rebuilt. Frame visible=" + frame.isVisible()
-                            + " displayable=" + frame.isDisplayable());
-                } catch (Exception ex) {
-                    System.out.println("[Zetamac] ERROR while rebuilding start screen:");
-                    ex.printStackTrace();
-                }
+                resetToHome();
             }
         });
 
         gameTimer.start();
+    }
+    // -----reset to home-------
+
+    void resetToHome() {
+
+        if (gameTimer != null) {
+            gameTimer.stop();
+        }
+
+        score = 0;
+        timeLeft = 0;
+
+        buildStartUI();
+
+        frame.revalidate();
+        frame.repaint();
     }
 
     // ---------------- QUESTION LOGIC ----------------
@@ -243,24 +268,32 @@ public class Zetamac {
             b = rand.nextInt(r2) + 1;
 
             if (allowNegative) {
-                if (rand.nextBoolean()) a = -a;
-                if (rand.nextBoolean()) b = -b;
+                if (rand.nextBoolean())
+                    a = -a;
+                if (rand.nextBoolean())
+                    b = -b;
             }
 
             op = operations[rand.nextInt(operations.length)];
 
             switch (op) {
-                case '+': result = a + b; break;
+                case '+':
+                    result = a + b;
+                    break;
 
                 case '-':
-                    if (!allowNegative && a < b) continue;
+                    if (!allowNegative && a < b)
+                        continue;
                     result = a - b;
                     break;
 
-                case 'x': result = a * b; break;
+                case 'x':
+                    result = a * b;
+                    break;
 
                 case '/':
-                    if (b == 0 || a % b != 0) continue;
+                    if (b == 0 || a % b != 0)
+                        continue;
                     result = a / b;
                     break;
             }
