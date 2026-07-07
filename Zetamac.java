@@ -33,14 +33,21 @@ public class Zetamac {
     Timer gameTimer;
 
     public Zetamac() {
+        // Frame is created once and reused for the lifetime of the app.
+        frame = new JFrame("Zetamac");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // only the 'X' button exits
+        frame.setLayout(new BorderLayout());
+
         buildStartUI();
+
+        frame.setVisible(true);
     }
 
     // ---------------- START SCREEN ----------------
     void buildStartUI() {
-        frame = new JFrame("Zetamac");
+        // Clear out anything left over from a previous round (game panel, etc.)
+        frame.getContentPane().removeAll();
         frame.setSize(500, 400);
-        frame.setLayout(new BorderLayout());
 
         startPanel = new JPanel();
         startPanel.setLayout(new GridLayout(7, 1));
@@ -103,8 +110,8 @@ public class Zetamac {
         startPanel.add(startBtn);
 
         frame.add(startPanel, BorderLayout.CENTER);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        frame.revalidate();
+        frame.repaint();
     }
 
     // ---------------- READ INPUTS ----------------
@@ -147,7 +154,8 @@ public class Zetamac {
         }
 
         // Switch to game UI
-        frame.remove(startPanel);
+        score = 0;
+        frame.getContentPane().removeAll();
         buildGameUI();
         frame.revalidate();
         frame.repaint();
@@ -158,7 +166,6 @@ public class Zetamac {
     // ---------------- GAME UI ----------------
     void buildGameUI() {
         frame.setSize(800, 400);
-        frame.setLayout(new BorderLayout());
 
         JPanel topPanel = new JPanel(new BorderLayout());
         timerLabel = new JLabel("Seconds left: " + timeLeft);
@@ -201,6 +208,7 @@ public class Zetamac {
     // ---------------- GAME START ----------------
     void startGame() {
         generateQuestion();
+        answerField.requestFocusInWindow();
 
         gameTimer = new Timer(1000, e -> {
             timeLeft--;
@@ -208,8 +216,19 @@ public class Zetamac {
 
             if (timeLeft <= 0) {
                 gameTimer.stop();
+                System.out.println("[Zetamac] Time up. Final score: " + score);
+                // Modal dialog blocks here until the user clicks "OK",
+                // then we loop back to the start screen instead of exiting.
                 JOptionPane.showMessageDialog(frame, "Time up! Score: " + score);
-                System.exit(0);
+                System.out.println("[Zetamac] Dialog dismissed, rebuilding start screen...");
+                try {
+                    buildStartUI();
+                    System.out.println("[Zetamac] Start screen rebuilt. Frame visible=" + frame.isVisible()
+                            + " displayable=" + frame.isDisplayable());
+                } catch (Exception ex) {
+                    System.out.println("[Zetamac] ERROR while rebuilding start screen:");
+                    ex.printStackTrace();
+                }
             }
         });
 
